@@ -7,8 +7,8 @@ class Robot:
         self.HOST = HOST
         self.PORT = PORT
 
-        self.left_cap = cv.VideoCapture('http://10.127.50.72:801')
-        self.right_cap = cv.VideoCapture('http://10.127.50.72:800')
+        self.left_cap = cv.VideoCapture('http://'+HOST+':801')
+        self.right_cap = cv.VideoCapture('http://'+HOST+':800')
 
         self.bm = cv.StereoSGBM_create(
             blockSize=3, numDisparities=96,
@@ -156,6 +156,9 @@ class Robot:
         if not (ret_left and ret_right):
             raise BaseException('Suka, some shit with cameras')
 
+        cv.imwrite('L.png', left_frame)
+        cv.imwrite('R.png', right_frame)
+
         disp = self.bm.compute(left_frame, right_frame)
         f = 2.7465
         T = 0.1
@@ -172,8 +175,21 @@ class Robot:
         mask_brown = cv.inRange(left_frame, (40, 40, 40), (90, 90, 90))
         mask_brown = cv.morphologyEx(mask_brown, cv.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
 
-        mask_chess = cv.inRange(left_frame, (0, 0, 0), (50, 50, 50))
-        mask_chess = cv.morphologyEx(mask_chess, cv.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
+        mask_black = cv.inRange(left_frame, (0, 0, 0), (60, 60, 60))
+        mask_white = cv.inRange(left_frame, (90, 90, 90), (255, 255, 255))
+
+        mask_black = cv.dilate(mask_black, np.ones((5, 5), dtype=np.uint8))
+        mask_black = cv.morphologyEx(mask_black, cv.MORPH_OPEN, np.ones((15, 15), dtype=np.uint8))
+        mask_black = cv.dilate(mask_black, np.ones((15, 15), dtype=np.uint8))
+        cv.imshow('black', mask_black)
+
+        mask_white = cv.dilate(mask_white, np.ones((5, 5), dtype=np.uint8))
+        mask_white = cv.morphologyEx(mask_white, cv.MORPH_OPEN, np.ones((15, 15), dtype=np.uint8))
+        mask_white = cv.dilate(mask_white, np.ones((15, 15), dtype=np.uint8))
+        cv.imshow('white', mask_white)
+
+        mask_chess = cv.bitwise_and(mask_black, mask_white)
+        # mask_chess = cv.morphologyEx(mask_chess, cv.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
 
         return {
             'left': left_frame,
@@ -183,5 +199,3 @@ class Robot:
             'mask_brown': mask_brown,
             'mask_chess': mask_chess,
         }
-
-

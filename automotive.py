@@ -16,15 +16,16 @@ def watch_on_zero(fedor):
 def watch_on_target(fedor):
     print('watch on target sequence')
     try:
-        # fedor.rotate_head(30, 20, 0, absolute=True)
-        fedor.rotate_head(0, 20, 0, absolute=True)
-        fedor.rotate_torso(0, 30, 0, absolute=True)
-        time.sleep(5)
+        fedor.rotate_head(30, 20, 0, absolute=True)
+        # fedor.rotate_head(0, 20, 0, absolute=True)
+        # fedor.rotate_torso(0, 30, 0, absolute=True)
+        time.sleep(1)
         sensors_data = fedor.get_sensor_data()
         left, right, disp = sensors_data['left'], sensors_data['right'], sensors_data['disp']
         mask_brown, mask_chess = sensors_data['mask_brown'], sensors_data['mask_chess']
 
         disp = disp.astype(np.uint8)
+        cv.imshow('objects', cv.bitwise_and(disp, mask_chess))
 
         roi_left_disp = cv.bitwise_and(cv.inRange(disp, 10, 96), mask_chess)
         roi_left_disp[:,:390] = 0
